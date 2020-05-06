@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>Home Page</h1>
+    {% for task in tasks%}
+        <article class="media content-section">
+            <div class="media-body">
+            <div class="article-metadata">
+                <a class="mr-2" href="#">{{ task.Task }}</a>
+                <small class="text-muted">{{ task.Time }}</small>
+            </div>
+            <h2><a class="article-title" href="#">{{ task.Task }}</a></h2>
+            <p class="article-content">{{ task.Name }}</p>
+            </div>
+        </article>
+    {% endfor %}
+{% endblock content %}
