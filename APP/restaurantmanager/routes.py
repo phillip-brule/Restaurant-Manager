@@ -1,7 +1,7 @@
 import secrets
 import os
 from PIL import Image
-from flask import escape, request, render_template, url_for, flash, redirect, request
+from flask import escape, request, render_template, url_for, flash, redirect, request, abort
 from restaurantmanager import app, db, bcrypt
 from restaurantmanager.forms import RegistrationForm, LoginForm, UpdateAccountForm, TaskForm
 from restaurantmanager.models import User, Task, Completed_Task, Report, Restaurant, Role
@@ -27,8 +27,8 @@ def on_identity_loaded(sender, identity):
             identity.provides.add(RoleNeed(role.name))
 '''
 
-@app.route('/')
 @app.route('/home')
+@login_required
 def home():
     tasks = Task.query.all()
     user_role = Role.query.filter_by(user_id=current_user.id).first()
@@ -36,6 +36,24 @@ def home():
     reports = Report.query.filter_by(r_id=r_id)
     return render_template('home.html', tasks=tasks, reports=reports)
 
+@app.route('/tasks')
+@login_required
+def tasks():
+    user_role = Role.query.filter_by(user_id=current_user.id).first()
+    r_id = user_role.r_id
+    tasks = Task.query.filter_by(r_id=r_id)
+    return render_template('tasks.html', tasks=tasks)
+
+@app.route('/reports')
+@login_required
+def reports():
+    page = request.args.get('page', 1, type=int)
+    user_role = Role.query.filter_by(user_id=current_user.id).first()
+    r_id = user_role.r_id
+    reports = Report.query.filter_by(r_id=r_id).paginate(page=page, per_page=10)
+    return render_template('reports.html', reports=reports)
+
+@app.route('/')
 @app.route('/about')
 def about():
     return render_template('about.html', title='About')
@@ -59,7 +77,7 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('home'))
+        return redirect(url_for('tasks'))
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
@@ -75,7 +93,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('home'))
+    return redirect(url_for('about'))
 
 
 
@@ -125,10 +143,44 @@ def new_task():
         db.session.add(task)
         db.session.commit()
         flash('Your task has been created!', 'success')
-    return render_template('create_task.html', title = 'New Task', form=form)
+    return render_template('create_task.html', title = 'New Task', form=form, legend='New Task')
 
 
 @app.route('/task/<int:task_id>')
+@login_required
 def task(task_id):
     task = Task.query.get_or_404(task_id)
     return render_template('task.html', title=task.name, task=task)
+
+@app.route('/task/<int:task_id>/update', methods=['GET', 'POST'])
+@login_required
+def update_task(task_id):
+    task = Task.query.get_or_404(task_id)
+    role = Role.query.filter_by(user_id=current_user.id).first()
+    r_id = role.r_id
+    if task.restaurant.id != r_id:
+        abort(403)
+    form = TaskForm()
+    if form.validate_on_submit():
+        task.name = form.name.data
+        task.description = form.description.data
+        db.session.commit()
+        flash('Your task has been updated!', 'success')
+        return redirect(url_for('task', task_id=task.id))
+    elif request.method == 'GET':
+        form.name.data = task.name
+        form.description.data = task.description    
+    return render_template('create_task.html', title = 'Edit Task', form=form, legend='Edit Task')
+
+@app.route('/task/<int:task_id>/delete', methods=['POST'])
+@login_required
+def delete_task(task_id):
+    task = Task.query.get_or_404(task_id)
+    role = Role.query.filter_by(user_id=current_user.id).first()
+    r_id = role.r_id
+    if task.restaurant.id != r_id:
+        abort(403)
+    db.session.delete(task)
+    db.session.commit()
+    flash('Your task has been deleted!', 'success')
+    return redirect(url_for('home'))
