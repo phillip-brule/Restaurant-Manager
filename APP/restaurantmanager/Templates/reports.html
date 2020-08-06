@@ -5,13 +5,13 @@
         <article class="media content-section">
             <div class="media-body">
             <div class="article-metadata">
-                <a class="mr-2" href="#">{{ report.report_date.strftime('%Y-%m-%d') }}</a>
+                <a class="mr-2" href="{{ url_for('report_page', report_id = report.id) }}">{{ report.report_date.strftime('%Y-%m-%d') }}</a>
                 <small class="text-muted">{{ report.restaurant.name }}</small>
             </div>
             </div>
         </article>
     {% endfor %}
-    {% for page_num in posts.iter_pages(left_edge=1, right_edge=4, left_current=1, right_current=5) %}
+    {% for page_num in reports.iter_pages(left_edge=1, right_edge=4, left_current=1, right_current=5) %}
         {% if page_num %}
             {% if reports.page == page_num %}
                 <a class="btn btn-info mb-4" href="{{ url_for('reports', page=page_num) }}">{{ page_num }}</a>

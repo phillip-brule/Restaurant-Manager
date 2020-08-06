@@ -39,9 +39,10 @@ def home():
 @app.route('/tasks')
 @login_required
 def tasks():
+    page = request.args.get('page', 1, type=int)
     user_role = Role.query.filter_by(user_id=current_user.id).first()
     r_id = user_role.r_id
-    tasks = Task.query.filter_by(r_id=r_id)
+    tasks = Task.query.filter_by(r_id=r_id).order_by(Task.name.asc()).paginate(page=page, per_page = 10)
     return render_template('tasks.html', tasks=tasks)
 
 @app.route('/reports')
@@ -50,7 +51,7 @@ def reports():
     page = request.args.get('page', 1, type=int)
     user_role = Role.query.filter_by(user_id=current_user.id).first()
     r_id = user_role.r_id
-    reports = Report.query.filter_by(r_id=r_id).paginate(page=page, per_page=10)
+    reports = Report.query.filter_by(r_id=r_id).order_by(Report.report_date.desc()).paginate(page=page, per_page=10)
     return render_template('reports.html', reports=reports)
 
 @app.route('/')
@@ -184,3 +185,21 @@ def delete_task(task_id):
     db.session.commit()
     flash('Your task has been deleted!', 'success')
     return redirect(url_for('home'))
+
+#page that shows all the tasks an employee has completed
+#this page will show analytics on how well this employee is performing
+@app.route('/employee/<string:user_id>')
+@login_required
+def employee_page(user_id):
+    user = User.query.filter_by(id = user_id).first_or_404()
+    page = request.args.get('page', 1, type=int)
+    completed_tasks = Completed_Task.query.filter_by(user_id=user_id)\
+        .order_by(Completed_Task.date_completed.desc())\
+        .paginate(page=page, per_page = 10)
+    return render_template('employee_page.html', completed_tasks=completed_tasks, user=user)
+
+@app.route('/report/<string:report_id>')
+@login_required
+def report_page(report_id):
+    report = Report.query.filter_by(id = report_id).first_or_404()
+    return render_template('report_page.html', report=report, completed_tasks = report.completed_tasks)

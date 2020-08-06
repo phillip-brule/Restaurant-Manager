@@ -1,12 +1,23 @@
 {% extends "layout.html" %}
 {% block content %}
     <h2>Restaurant Tasks</h2>
-    {% for task in tasks%}
+    {% for task in tasks.items %}
         <article class="media content-section">
             <div class="media-body">
             <h2><a class="article-title" href="{{ url_for('task', task_id=task.id) }}">{{ task.name }}</a></h2>
             <p class="article-content">{{ task.description }}</p>
             </div>
         </article>
+    {% endfor %}
+    {% for page_num in tasks.iter_pages(left_edge=1, right_edge=4, left_current=1, right_current=5) %}
+        {% if page_num %}
+            {% if tasks.page == page_num %}
+                <a class="btn btn-info mb-4" href="{{ url_for('tasks', page=page_num) }}">{{ page_num }}</a>
+            {% else %}
+                <a class="btn btn-outline-info mb-4" href="{{ url_for('tasks', page=page_num) }}">{{ page_num }}</a>
+            {% endif %}
+        {% else %}
+            ...
+        {% endif %}
     {% endfor %}
 {% endblock content %}

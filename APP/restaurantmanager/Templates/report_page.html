@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>Report From {{ report.report_date }}</h1>
+
+    <article class="media content-section">
+        <div class="media-body">
+        <h2>Comments</h2>
+        <p class="article-content">{{  report.comment }}</p>
+        </div>
+    </article>
+    <h2>Tasks Completed On {{ report.report_date }} </h2>
+    {% for completed_task in completed_tasks%}
+        <article class="media content-section">
+            <div class="media-body">
+            <h2><a class="article-title" href="#">{{ completed_task.date_completed }}</a></h2>
+            <p class="article-content">{{  completed_task.task().name }}</p>
+            </div>
+        </article>
+    {% endfor %}
+{% endblock content %}

@@ -1,5 +1,6 @@
-from restaurantmanager import db, login_manager
 from datetime import datetime
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from restaurantmanager import db, login_manager, app
 from flask_login import UserMixin
 
 @login_manager.user_loader
@@ -13,6 +14,19 @@ class User(db.Model, UserMixin):
     image_file = db.Column(db.String(100), nullable=False, default='default.jpg')
     password = db.Column(db.String(60), nullable=False)
     completed_tasks = db.relationship('Completed_Task', backref='employee', lazy=True)
+
+    def get_reset_token(self, expires_sec=1800):
+        s = Serializer(app.config['SECRET_KEY'], expires_sec)
+        return s.dumps({'user_id': self.id}).decode('utf-8')
+
+    @staticmethod
+    def verify_reset_token(token):
+        s = Serializer(app.config['SECRET_KEY'])
+        try:
+            user_id = s.loads(token)['user_id']
+        except:
+            return None
+        return User.query.get(user_id)
     
     def __repr__(self):
         return f"User('{self.name}', '{self.email}', '{self.image_file}')"
@@ -59,6 +73,8 @@ class Completed_Task(db.Model):
 
     def __repr__(self):
         return f"Completed Task( Task id:'{self.task_id}', User id:'{self.user_id}', Date Completed: '{self.date_completed}', Rating: '{self.rating}')"
+    def task(self):
+        return  Task.query.filter_by(id = self.task_id)
 
 class Role(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
