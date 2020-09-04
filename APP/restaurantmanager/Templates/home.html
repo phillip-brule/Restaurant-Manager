@@ -5,7 +5,7 @@
     {% for task in tasks%}
         <article class="media content-section">
             <div class="media-body">
-            <h2><a class="article-title" href="{{ url_for('task', task_id=task.id) }}">{{ task.name }}</a></h2>
+            <h2><a class="article-title" href="{{ url_for('tasks.task', task_id=task.id) }}">{{ task.name }}</a></h2>
             <p class="article-content">{{ task.description }}</p>
             </div>
         </article>

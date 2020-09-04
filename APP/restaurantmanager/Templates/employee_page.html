@@ -5,7 +5,7 @@
     {% for completed_task in completed_tasks%}
         <article class="media content-section">
             <div class="media-body">
-            <h2><a class="article-title" href="{{ url_for('employee_page', user_id=user.id) }}">{{ completed_task.date_completed }}</a></h2>
+            <h2><a class="article-title" href="{{ url_for('users.employee_page', user_id=user.id) }}">{{ completed_task.date_completed }}</a></h2>
             <p class="article-content">{{  completed_task.task().name }}</p>
             </div>
         </article>
