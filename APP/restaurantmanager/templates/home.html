@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>Home</h1>
+    <h2>Restaurant Tasks</h2>
+    {% for task in tasks%}
+        <article class="media content-section">
+            <div class="media-body">
+            <h2><a class="article-title" href="{{ url_for('tasks.task', task_id=task.id) }}">{{ task.name }}</a></h2>
+            <p class="article-content">{{ task.description }}</p>
+            </div>
+        </article>
+    {% endfor %}
+    <h2>Lastest Reports</h2>
+    {% for report in reports%}
+        <article class="media content-section">
+            <div class="media-body">
+            <div class="article-metadata">
+                <a class="mr-2" href="#">{{ report.report_date.strftime('%Y-%m-%d') }}</a>
+                <small class="text-muted">{{ report.restaurant.name }}</small>
+            </div>
+            </div>
+        </article>
+    {% endfor %}
+{% endblock content %}

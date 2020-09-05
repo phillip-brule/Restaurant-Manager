@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1 class"mb-3">{{ user.name }}'s Employee Page</h1>
+    <h2>Tasks Completed By {{ user.name }} ({{ completed_tasks.total }})</h2>
+    {% for completed_task in completed_tasks%}
+        <article class="media content-section">
+            <div class="media-body">
+            <h2><a class="article-title" href="{{ url_for('users.employee_page', user_id=user.id) }}">{{ completed_task.date_completed }}</a></h2>
+            <p class="article-content">{{  completed_task.task().name }}</p>
+            </div>
+        </article>
+    {% endfor %}
+{% endblock content %}
